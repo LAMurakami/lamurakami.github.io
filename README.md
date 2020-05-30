@@ -1,4 +1,4 @@
-## Welcome to GitHub Pages
+## Welcome to the LAMurakami GitHub Pages
 
 After creating the repository and selecting one of the [Jekyll](https://jekyllrb.com/) Themes I used the [editor on GitHub](https://github.com/LAMurakami/lamurakami.github.io/edit/master/README.md) to maintain the Markdown files.
 
