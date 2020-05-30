@@ -4,7 +4,7 @@ On Saturday, May 30, 2020 after creating the repository and selecting one of the
 
 ### Markdown
 
-[GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/) is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+[GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/) is the lightweight and default syntax for styling GitHub writing. It includes conventions for
 
 ```markdown
 Syntax highlighted code block
@@ -25,7 +25,7 @@ Syntax highlighted code block
 ```
 ### Jekyll Themes
 
-This Pages site will use the layout and styles from the Jekyll theme I selected in my [repository settings](https://github.com/LAMurakami/lamurakami.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.  I was not particularly happy with any of the 10 or so themes I briefly examined.
+This Pages site will use the layout and styles from the Jekyll theme I selected in my [repository settings](https://github.com/LAMurakami/lamurakami.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.  I am new to Jekyll and was not particularly happy with any of the 10 or so themes I briefly examined.
 
 ### Support or Contact
 
