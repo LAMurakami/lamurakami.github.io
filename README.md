@@ -1,6 +1,6 @@
 ## Welcome to the [LAMurakami GitHub Pages](https://lamurakami.github.io/)
 
-On Saturday, May 30, 2020 after creating the repository and selecting one of the [Jekyll](https://jekyllrb.com/) Themes I used the [editor on GitHub](https://github.com/LAMurakami/lamurakami.github.io/edit/master/README.md) to update the README.md Markdown file for this new site.  I then linked it to [LAM Sites](http://sites.lam1.us}.
+On Saturday, May 30, 2020 after creating the repository and selecting one of the [Jekyll](https://jekyllrb.com/) Themes I used the [editor on GitHub](https://github.com/LAMurakami/lamurakami.github.io/edit/master/README.md) to update the README.md Markdown file for this new site.  I then linked it to [LAM Sites](http://sites.lam1.us).
 
 ### Markdown
 
