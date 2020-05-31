@@ -1,7 +1,0 @@
-This is a test text file.
-
-No much in it.
-
-But now it has changed!
-
-And Changed again!
