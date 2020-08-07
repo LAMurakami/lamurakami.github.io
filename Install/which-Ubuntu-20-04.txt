@@ -1,0 +1,9 @@
+bin/
+bin/which
+share/
+share/man/
+share/man/man1/
+share/man/man1/which.1
+share/info/
+share/info/dir
+share/info/which.info
