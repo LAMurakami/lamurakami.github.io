@@ -3,7 +3,7 @@ bin/which
 share/
 share/man/
 share/man/man1/
-share/man/man1/which.1
+share/man/man1/which.1.gz
 share/info/
 share/info/dir
-share/info/which.info
+share/info/which.info.gz
