@@ -1,0 +1,6 @@
+bin/
+bin/tnef
+share/
+share/man/
+share/man/man1/
+share/man/man1/tnef.1.gz
