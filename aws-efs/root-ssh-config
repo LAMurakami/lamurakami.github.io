@@ -1,4 +1,4 @@
 Host aws aws.lam1.us
 Port 55520
-IdentityFile /root/.ssh/git_ak17_id_rsa
+IdentityFile /root/.ssh/git_ak20_id_rsa
 Hostname aws.lam1.us
