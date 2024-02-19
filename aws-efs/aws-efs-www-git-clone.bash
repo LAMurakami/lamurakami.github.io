@@ -26,5 +26,8 @@ else
 fi
 
 git clone $origin1$repo $target$repo
-cd $target$repo
-git checkout -b $keyName
+
+if [ -z $3 ] ; then
+  cd $target$repo
+  git checkout -b $keyName
+fi
