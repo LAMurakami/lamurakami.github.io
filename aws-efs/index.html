@@ -1,0 +1,148 @@
+<html><head>
+
+<title>(AWS) Elastic File System (EFS)</title>
+
+<link rel="Shortcut Icon" href="LAM.ico" />
+<link rel="stylesheet" type="text/css" href="Style.css" />
+
+</head><body>
+
+<!-- START top_nav menuwrapper menuBar -->
+<div id="top_nav" align="center"><div id="menuwrapper" align="center">
+<ul id="menuBar" style="margin-bottom: 0px;">
+
+<li><a class="trigger" href="." name="top"> LAMurakami GitHub Pages</a>
+    <ul>
+    <li><a href="/About">     * About LAMurakami GitHub Pages </a></li>
+    </ul>
+</li>
+<li><a class="trigger" href="http://sites.LAM1.us/"> aka</a>
+    <ul>
+    <li><a href="https://lamurakami.github.io">
+    * https://lamurakami.github.io</a></li>
+    <li><a href="https://ak20.lam1.us/github">
+    * https://ak20.lam1.us/github</a></li>
+    </ul>
+</li><!-- END aka -->
+<li><a class="trigger" href="#tail">        Contact me</a>
+    <ul>
+    <li><a href="/">                    * 907-978-0260</a></li>
+    <li><a href="MailTo:GitHubPages@lamurakami.com">
+                                            * GitHubPages@lamurakami.com</a></li>
+    </ul>
+</li><!-- END Contact me -->
+</ul>
+</div></div><br class="clearit"><!-- END top_nav menuwrapper menuBar -->
+<span style="float: right;"><a href="#toc">
+<img border="0" src="/ScrollDown.gif" alt="down" />Contents
+<img border="0" src="/ScrollDown.gif" alt="down" /></a></span>
+<h1 >&nbsp;
+
+(AWS) Elastic File System (EFS)
+
+</h1>
+<br class="clearit">
+<!-- start content -->
+				<div id="mw-content-text" lang="en" dir="ltr"><div><p><br />
+</p>
+<ul><li><a href="https://aws.lam1.us/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a> &#160; <a href="https://aws.lam1.us/a/Linux_Apache_MariaDB_in_the_cloud" title="Linux Apache MariaDB in the cloud">Linux Apache MariaDB in the cloud</a> &#160; <a href="https://aws.lam1.us/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a></li>
+<li><a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/tree/master/aws-efs">The aws-efs directory on my github pages website github repository</a></li></ul>
+<p>Early in my experience with AWS I discovered EFS and made use of a persistent parallel file system a tool for launching a clone of the LAM Alaska website on demand.  I initially chose the us-west-2 Oregon region to operate in in 2017 and didn't use another region until 2024.  By that time sucess was defined as the ability to launch a fully functional clone of the LAM Alaska website with date from backups created from the main website within the last 24 hours.
+</p>
+
+<h2><span id="Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">Mount the LAM aws-efs for the region the instance was launched in</span></h2>
+<p>I created the aws-efs directory on my github pages website to allow metadata retrieval somewhat like the Instance Metadata Service as implemented an AWS.  I use AWS Instance Metadata Service Version 2 (IMDSv2) to retrieve the REGION and then retrieve the EFS DNS name used to mount the volume with NFS from my github pages website.
+</p><p>The cloud-init section to determine the EFS name for the region this instance was launched in:
+</p>
+<pre> - echo
+ - echo 'AWS LAM Get EFS for REGION'
+ - wget --quiet <a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/blob/master/aws-efs/REGION.bash">https://lamurakami.github.io/aws-efs/REGION.bash</a>
+ - chmod a+x REGION.bash
+ - export REGION=$(./REGION.bash)
+ - rm REGION.bash
+ - EFS=$(curl -s https://lamurakami.github.io/aws-efs/${REGION})
+</pre>
+<p>The availability of this metadata to the cloud-init service during initialization allows me to mount the Elastic File System (EFS) for that region with NFS.  The github pages website seems to be high availability and reliable and provides both IPv4 and IPv6 connectivity unlike the main github site where repositories are housed which as of Tuesday, February 20, 2024 does not preovide IPv6 access.
+</p><p>The cloud-init section to mount the AWS VPC Elastic File System with nfs4:
+</p>
+<pre> - echo
+ - echo 'AWS LAM Adding nfs4 mount to AWS VPC Elastic File System'
+ - mkdir /mnt/efs
+ - nfsOpt="_netdev,noresvport,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0"
+ - echo "${EFS}:/ /mnt/efs nfs4 ${nfsOpt}" &gt;&gt; /etc/fstab
+ - systemctl daemon-reload
+ - mount -a -t nfs
+</pre>
+<p>The above mount section has been included in my cloud-init files since I became dependant on it's availability and ease of use but until 2024 when I started expaning to other regions the file system name was hard coded.  When a EFS is created within a region a unique file system ID is assigned and a DNS name like &lt;file system ID&gt;.efs.&lt;region&gt;.amazonaws.com is assigned but is only usable in the VPC where the EFS was created and by default is accessable only in that region.
+</p><p>During the process of modifying my scripts to work in any region I reduced the EFS dependency to the ubuntu.tgz and ec2-user.tgz user resource files.  The ubuntu.tgz file includes some private resources including aws and duckdns credentials specific to an AWS LAM clone.
+</p><p>Many of the other dependencies were moved from AWS EFS to a private AWS S3 bucket.  Accessing the private AWS S3 bucket requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS is a requirement to accessing the private AWS S3 bucket.
+</p>
+<h2><span id="An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">An EFS by default can be accessed only from the region it is created in</span></h2>
+<p>By default EC2 instances running in multiple Availability Zones within the same AWS Region can access the Elastic File System (EFS) for that region.  An EFS can be created to server only One Availability Zone but by default a mount target is created for each Availability Zone within the region.
+</p><p>A Domain Name Service (DNS) name is assigned for each EFS which resolves to the IP address of the EFS mount target in the same Availability Zone as the EC2 instance querying the DNS.  Connectivity and DNS Name resolution is only available on the private IPv4 subnets of the VPC.
+</p><p>I have decided not to use AWS Backup, EFS Replication, lifecycle management or encryption on the filesystems I am creating in additional regions.  I am not sure any of these features were available when I created the Oregon EFS years ago.
+</p>
+<h2><span id="Create_an_EFS_in_a_region">Create an EFS in a region</span></h2>
+<ul><li>Check 172.31.0.0/16 NFS for EFS inbound rule in Security Group</li>
+<li>Create EFS security group with NFS for EFS inbound rule</li>
+<li>Create EFS - aws-efs - use customize option</li>
+<li>Attach EFS security group instead of default on second customize page for the interfaces for each Availability Zone in the region</li></ul>
+<h2><span id="Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</span></h2>
+<pre>ll -aRh /mnt/efs
+</pre>
+<pre>sudo chown ubuntu:ubuntu /mnt/efs
+sudo chown ec2-user:ec2-user /mnt/efs
+sudo chown admin:admin /mnt/efs
+</pre>
+<pre>mkdir /mnt/efs/aws-lam1-ubuntu
+</pre>
+<pre>scp -p lam@aws:/mnt/efs/aws-lam1-ubuntu/ubuntu.t* \
+/mnt/efs/aws-lam1-ubuntu
+</pre>
+<pre>mkdir /mnt/efs/Amazon-Linux-2023
+</pre>
+<pre>scp -p lam@aws:/mnt/efs/Amazon-Linux-2023/ec2-user.t* \
+/mnt/efs/Amazon-Linux-2023
+</pre>
+<!-- 
+NewPP limit report
+Cached time: 20240226024941
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.003 seconds
+Real time usage: 0.003 seconds
+Preprocessor visited node count: 26/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 94/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20240226024941 and revision id 7510. Rendering was triggered because: edit-page
+ -->
+</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7510">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7510</a>"</div></div>
+<!-- end content -->
+<div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
+<ul>
+<li><a href="#Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">1 Mount the LAM aws-efs for the region the instance was launched in</a></li>
+<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">2 An EFS by default can be accessed only from the region it is created in</a></li>
+<li><a href="#Create_an_EFS_in_a_region">3 Create an EFS in a region</a></li>
+<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">4 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
+</ul>
+</div>
+
+<p align=right>
+<a href="#top" name="tail"><img border="0" src="/ScrollUp.gif" alt="up" />This page
+<img border="0" src="/ScrollUp.gif" alt="up" /></a> was last updated
+
+Sunday, February 25, 2024 @ 6:15:42 PM (Alaska Time)
+</p>
+</body></html>
