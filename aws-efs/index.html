@@ -43,26 +43,24 @@
 </h1>
 <br class="clearit">
 <!-- start content -->
-				<div id="mw-content-text" lang="en" dir="ltr"><div>
+<div id="mw-content-text" lang="en" dir="ltr"><div>
 
-<ul><li><a href="https://aws.lam1.us/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a> &#160; <a href="https://aws.lam1.us/a/Linux_Apache_MariaDB_in_the_cloud" title="Linux Apache MariaDB in the cloud">Linux Apache MariaDB in the cloud</a> &#160; <a href="https://aws.lam1.us/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a></li>
-<li><a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/tree/master/aws-efs">The aws-efs directory on my github pages website github repository</a></li></ul>
-<p>Early in my experience with AWS I discovered EFS and made use of a persistent parallel file system a tool for launching a clone of the LAM Alaska website on demand.  I initially chose the us-west-2 Oregon region to operate in in 2017 and didn't use another region until 2024.  By that time sucess was defined as the ability to launch a fully functional clone of the LAM Alaska website with date from backups created from the main website within the last 24 hours.
+<ul><li><a href="/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a> &#160; <a href="/a/Linux_Apache_MariaDB_in_the_cloud" title="Linux Apache MariaDB in the cloud">Linux Apache MariaDB in the cloud</a> &#160; <a href="/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a></li>
+<li><a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/tree/master/aws-efs">The aws-efs directory on my github pages website github repository</a></li>
+<li><a rel="nofollow" href="https://ak20.lam1.us/Bk2/aws/efs/">Amazon Web Services (AWS) Elastic File System (EFS)</a> us-west-2 Oregon backup on ak20</li></ul>
+<p>Early in my experience with AWS I discovered EFS and made use of a persistent parallel file system as a tool for launching a clone of the LAM Alaska website on demand.  I initially chose the us-west-2 Oregon region to operate in in 2017 and didn't use another region until 2024.  By that time success was defined as the ability to launch a fully functional clone of the LAM Alaska website with data from backups created from the main website within the last 24 hours.
 </p>
 
 <h2><span id="Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">Mount the LAM aws-efs for the region the instance was launched in</span></h2>
-<p>I created the aws-efs directory on my github pages website to allow metadata retrieval somewhat like the Instance Metadata Service as implemented an AWS.  I use AWS Instance Metadata Service Version 2 (IMDSv2) to retrieve the REGION and then retrieve the EFS DNS name used to mount the volume with NFS from my github pages website.
+<p>I created the aws-efs directory on my github pages website to allow metadata retrieval somewhat like the Instance Metadata Service as implemented on AWS.  I use "cloud-init query" to retrieve the REGION and then retrieve the EFS DNS name used to mount the volume with NFS from my github pages website.
 </p><p>The cloud-init section to determine the EFS name for the region this instance was launched in:
 </p>
 <pre> - echo
  - echo 'AWS LAM Get EFS for REGION'
- - wget --quiet <a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/blob/master/aws-efs/REGION.bash">https://lamurakami.github.io/aws-efs/REGION.bash</a>
- - chmod a+x REGION.bash
- - export REGION=$(./REGION.bash)
- - rm REGION.bash
+ - export REGION=$(cloud-init query region)
  - EFS=$(curl -s https://lamurakami.github.io/aws-efs/${REGION})
 </pre>
-<p>The availability of this metadata to the cloud-init service during initialization allows me to mount the Elastic File System (EFS) for that region with NFS.  The github pages website seems to be high availability and reliable and provides both IPv4 and IPv6 connectivity unlike the main github site where repositories are housed which as of Tuesday, February 20, 2024 does not preovide IPv6 access.
+<p>The availability of this metadata to the cloud-init service during initialization allows me to mount the Elastic File System (EFS) for that region with NFS.  The github pages website seems to be high availability and reliable and provides both IPv4 and IPv6 connectivity unlike the main github site where repositories are housed which as of Tuesday, February 20, 2024 does not provide IPv6 access.
 </p><p>The cloud-init section to mount the AWS VPC Elastic File System with nfs4:
 </p>
 <pre> - echo
@@ -78,7 +76,7 @@
 </p><p>Many of the other dependencies were moved from AWS EFS to a private AWS S3 bucket.  Accessing the private AWS S3 bucket requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS is a requirement to accessing the private AWS S3 bucket.
 </p>
 <h2><span id="An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">An EFS by default can be accessed only from the region it is created in</span></h2>
-<p>By default EC2 instances running in multiple Availability Zones within the same AWS Region can access the Elastic File System (EFS) for that region.  An EFS can be created to server only One Availability Zone but by default a mount target is created for each Availability Zone within the region.
+<p>By default EC2 instances running in multiple Availability Zones within the same AWS Region can access the Elastic File System (EFS) for that region.  An EFS can be created to serve only One Availability Zone but by default a mount target is created for each Availability Zone within the region.
 </p><p>A Domain Name Service (DNS) name is assigned for each EFS which resolves to the IP address of the EFS mount target in the same Availability Zone as the EC2 instance querying the DNS.  Connectivity and DNS Name resolution is only available on the private IPv4 subnets of the VPC.
 </p><p>I have decided not to use AWS Backup, EFS Replication, lifecycle management or encryption on the filesystems I am creating in additional regions.  I am not sure any of these features were available when I created the Oregon EFS years ago.
 </p>
@@ -93,6 +91,7 @@
 <pre>sudo chown ubuntu:ubuntu /mnt/efs
 sudo chown ec2-user:ec2-user /mnt/efs
 sudo chown admin:admin /mnt/efs
+sudo chown -R lam:staff /mnt/efs
 </pre>
 <pre>mkdir /mnt/efs/aws-lam1-ubuntu
 </pre>
@@ -104,46 +103,54 @@ sudo chown admin:admin /mnt/efs
 <pre>scp -p lam@aws:/mnt/efs/Amazon-Linux-2023/ec2-user.t* \
 /mnt/efs/Amazon-Linux-2023
 </pre>
+<h2><span id="The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">The original us-west-2 Oregon EFS is backed up to my main server</span></h2>
+<p>As of 2024 I am back up to 1 G of aws efs storage in the us-west-2 Oregon region costing me $0.30 per or $3.60 per year.  I also have a copy of most files in the aws s3://lamurakami bucket also in the us-west-2 Oregon region costing me an additional $0.28 per year.  In March and April of 2024 I had begun eliminating the efs copies but in April of 2024 I paused this when I realized I was using copies on the Bk2 backup of aws efs for initialization of qemu instances on the LAM ALaska LAN.
+</p>
+<ul><li><a rel="nofollow" href="https://ak20.lam1.us/Bk2/aws/efs/">Amazon Web Services (AWS) Elastic File System (EFS)</a> us-west-2 Oregon backup on ak20</li></ul>
+<p>Files in this backup are used by <a href="/a/QEMU_(Quick_Emulator)_(software)" title="QEMU (Quick Emulator) (software)">QEMU</a> instances on the LAM Alaska LAN during initialization.
+</p>
+<h2><span id="Log">Log</span></h2>
+<ul><li>Published Page location: <a rel="nofollow" href="https://lamurakami.github.io/aws-efs/">https://lamurakami.github.io/aws-efs/</a></li>
+<li>On Friday, June 21, 2024 I replaced REGION.bash with the "cloud-init query region" command.</li>
+<li>Sunday, February 25, 2024 Published this page for the first time.</li>
+<li>As of <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2402/2024-02-18/Daily-ak19.txt">Sunday, February 18, 2024</a> I have three regions I have created an EFS in and can launch a full clone on an Ubuntu ARM instance without a public IP address as long as aws.lam1.us is available.
+<ul><li>I have no intention to replicate anything but the ubuntu.tgz and ec2-user.tgz files on an EFS in every region I will operate.  I can use aws S3 which is accessible by any region and for additional instances can use aws.lam1.us as a source.  For instances that do have a public IPv4 address I can use github for the source of repos I have made public there.</li>
+<li>My EFS usage in Oregon had grown to over a GB which costs me over $0.30 a month.  Replicating it to all 28 regions would approach $10.00 a month cost.  I tested adding the value to the instance tags so I won't have to make 28 versions of each of the over 15 cloud-init files.  Additional name pair tags could be used to reduce the number of cloud-init files.  I dropped using the EFS tag because it was easy after I had the aws credentials which is one of the secrets I want on the private EFS.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20240226024941
+Cached time: 20240621184405
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.003 seconds
-Real time usage: 0.003 seconds
-Preprocessor visited node count: 26/1000000
-Post‐expand include size: 0/2097152 bytes
+CPU time usage: 0.004 seconds
+Real time usage: 0.004 seconds
+Preprocessor visited node count: 35/1000000
+Post‐expand include size: 60/2097152 bytes
 Template argument size: 0/2097152 bytes
 Highest expansion depth: 2/100
 Expensive parser function count: 0/100
 Unstrip recursion depth: 0/20
-Unstrip post‐expand size: 94/5000000 bytes
+Unstrip post‐expand size: 46/5000000 bytes
 -->
 <!--
 Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20240226024941 and revision id 7510. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20240621184405 and revision id 7809. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7809">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7809</a>"</div>
 <ul>
 <li><a href="#Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">1 Mount the LAM aws-efs for the region the instance was launched in</a></li>
 <li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">2 An EFS by default can be accessed only from the region it is created in</a></li>
 <li><a href="#Create_an_EFS_in_a_region">3 Create an EFS in a region</a></li>
 <li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">4 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
+<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">5 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
+<li><a href="#Log">6 Log</a></li>
 </ul>
 </div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7510">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7510</a>"</div>
-<p align=right>
-<a href="#top" name="tail"><img border="0" src="../ScrollUp.gif" alt="up" />This page
-<img border="0" src="../ScrollUp.gif" alt="up" /></a> was last updated
-
-Sunday, February 25, 2024 @ 6:15:42 PM (Alaska Time)
-</p>
 </body></html>
