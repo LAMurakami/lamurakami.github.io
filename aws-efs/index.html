@@ -59,6 +59,7 @@
  - echo 'AWS LAM Get EFS for REGION'
  - export REGION=$(cloud-init query region)
  - EFS=$(curl -s https://lamurakami.github.io/aws-efs/${REGION})
+ - echo "REGION=${REGION} EFS=${EFS}"
 </pre>
 <p>The availability of this metadata to the cloud-init service during initialization allows me to mount the Elastic File System (EFS) for that region with NFS.  The github pages website seems to be high availability and reliable and provides both IPv4 and IPv6 connectivity unlike the main github site where repositories are housed which as of Tuesday, February 20, 2024 does not provide IPv6 access.
 </p><p>The cloud-init section to mount the AWS VPC Elastic File System with nfs4:
@@ -153,4 +154,10 @@ Transclusion expansion time report (%,ms,calls,template)
 <li><a href="#Log">6 Log</a></li>
 </ul>
 </div>
+<p align=right>
+<a href="#top" name="tail"><img border="0" src="../ScrollUp.gif" alt="up" />This page
+<img border="0" src="../ScrollUp.gif" alt="up" /></a> was last updated
+
+Friday, June 21, 2024 @ 11:31:30 AM (Alaska Time)
+</p>
 </body></html>
