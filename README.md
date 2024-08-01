@@ -11,7 +11,7 @@ authentication over IPv6 as well as IPv4 unlike the
 Repostories that can only be accessed over IPv6 with the
 [IPv6 only workaround.](https://lamurakami.github.io/blog/2024/06/05/Access-GitHub-com-from-an-instance-without-a-public-IPv4-address.html)
 
-## The LAMurakami [GitLab](https://lamurakami.gitlab.io)/[GitHub](https://lamurakami.github.io)  Pages Project/Repository
+## The LAMurakami [GitLab](https://lamurakami.gitlab.io)/[GitHub](https://lamurakami.github.io)  Pages [Project](https://gitlab.com/LAMurakami/lamurakami.gitlab.io)/[Repository](https://github.com/LAMurakami/lamurakami.github.io)
 
 On Saturday, May 30, 2020 after creating the repository and selecting one of the [Jekyll](https://jekyllrb.com/) Themes I used the [editor on GitHub](https://github.com/LAMurakami/lamurakami.github.io/edit/master/README.md) to update the README.md Markdown file for this new site.  I then linked it to [LAM Sites](http://sites.lam1.us).  I continued on with some of the [GitHub Pages documentation](https://help.github.com/categories/github-pages-basics) topics including Configuring a custom domain for your GitHub Pages site.
 
