@@ -47,11 +47,16 @@
 <!-- start content -->
 <div id="mw-content-text" lang="en" dir="ltr"><div>
 
-<ul><li><a href="https://ak20.lam1.us/a/Amazon_Web_Services_(AWS)" title="Amazon Web Services (AWS)">Amazon Web Services (AWS)</a> &#160; <a href="http://aws.lam1.us/About" title="Linux Apache MariaDB in the cloud">Linux Apache MariaDB in the cloud</a> &#160; <a href="https://ak20.lam1.us/a/Modify_AWS_VPC_for_IPv6" title="Modify AWS VPC for IPv6">Modify AWS VPC for IPv6</a></li>
+<ul><li><a rel="nofollow" href="https://ak20.lam1.us/a/Amazon_Web_Services_(AWS)">Amazon Web Services (AWS)</a> &#160; <a rel="nofollow" href="http://aws.lam1.us/About">Linux Apache MariaDB in the cloud</a> &#160; <a rel="nofollow" href="https://ak20.lam1.us/a/Modify_AWS_VPC_for_IPv6">Modify AWS VPC for IPv6</a></li>
 <li>The aws-efs directory on my <a rel="nofollow" href="https://lamurakami.gitlab.io/aws-efs">GitLab</a>/<a rel="nofollow" href="https://lamurakami.github.io/aws-efs">GitHub</a> pages website <a rel="nofollow" href="https://gitlab.com/LAMurakami/lamurakami.gitlab.io/-/tree/master/aws-efs?ref_type=heads">GitLab project</a> <a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/tree/master/aws-efs">GitHub repository</a></li>
 <li><a rel="nofollow" href="https://ak20.lam1.us/Bk2/aws/efs/">Amazon Web Services (AWS) Elastic File System (EFS)</a> us-west-2 Oregon backup on ak20</li></ul>
 <p>Early in my experience with AWS I discovered EFS and made use of a persistent parallel file system as a tool for launching a clone of the LAM Alaska website on demand.  I initially chose the us-west-2 Oregon region to operate in in 2017 and didn't use another region until 2024.  By that time success was defined as the ability to launch a fully functional clone of the LAM Alaska website with data from backups created from the main website within the last 24 hours.
+</p>
+</div>
 
+<h2><span id="The_.28AWS.29_Elastic_File_System_.28EFS.29_metadata_directory_is_obsolete"></span><span id="The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">The (AWS) Elastic File System (EFS) metadata directory is obsolete</span></h2>
+<p>As of August 2024 the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> replaces the (AWS) Elastic File System (EFS) metadata directory method used when I was addressing the IPv6 only workaround for git before putting my public git repos on GitLab that can be accessed with IPv6 as well as IPv4.
+</p>
 <h2><span id="Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">Mount the LAM aws-efs for the region the instance was launched in</span></h2>
 <p>I created the aws-efs directory on my github pages website to allow metadata retrieval somewhat like the Instance Metadata Service as implemented on AWS.  I use "cloud-init query" to retrieve the REGION and then retrieve the EFS DNS name used to mount the volume with NFS from my github pages website.
 </p><p>The cloud-init section to determine the EFS name for the region this instance was launched in:
@@ -114,10 +119,13 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <p>As of 2024 I am back up to 1 G of aws efs storage in the us-west-2 Oregon region costing me $0.30 per or $3.60 per year.  I also have a copy of most files in the aws s3://lamurakami bucket also in the us-west-2 Oregon region costing me an additional $0.28 per year.  In March and April of 2024 I had begun eliminating the efs copies but in April of 2024 I paused this when I realized I was using copies on the Bk2 backup of aws efs for initialization of qemu instances on the LAM ALaska LAN.
 </p>
 <ul><li><a rel="nofollow" href="https://ak20.lam1.us/Bk2/aws/efs/">Amazon Web Services (AWS) Elastic File System (EFS)</a> us-west-2 Oregon backup on ak20</li></ul>
-<p>Files in this backup are used by <a href="https://ak20.lam1.us/a/QEMU_(Quick_Emulator)_(software)" title="QEMU (Quick Emulator) (software)">QEMU</a> instances on the LAM Alaska LAN during initialization.
+<p>Files in this backup are used by <a rel="nofollow" href="https://ak20.lam1.us/a/QEMU_(Quick_Emulator)_(software)">QEMU (Quick Emulator) (software)|QEMU</a> instances on the LAM Alaska LAN during initialization.
 </p>
 <h2><span id="Log">Log</span></h2>
 <ul><li>Published Page locations: <a rel="nofollow" href="https://lamurakami.gitlab.io/aws-efs/">https://lamurakami.gitlab.io/aws-efs/</a> <a rel="nofollow" href="https://lamurakami.github.io/aws-efs/">https://lamurakami.github.io/aws-efs/</a></li>
+<li>On Saturday, August 24, 2024 I enabled my 30th. AWS region but EFS is not yet available in the brand new Asia Pacific (Malaysia) region.
+<ul><li>I haven't launched an instance in the new region but did have the thought that I could install Bash User resources using the aws ssh connectivity and elimanate the need for a local EFS in every region.</li>
+<li>I had just completed the change to use aws-efs-mount.bash instead of the (AWS) Elastic File System (EFS) metadata directory method to mount the AWS LAM VPC EFS unique filesystem for the region the instance was launched in.</li></ul></li>
 <li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2407/2024-07-28/Daily-ak19.txt">Sunday, July 28, 2024</a> I published to <a rel="nofollow" href="https://lamurakami.gitlab.io/aws-efs">GitLab Pages</a> aws well as <a rel="nofollow" href="https://lamurakami.github.io/aws-efs">GitHub Pages</a>.</li>
 <li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2407/2024-07-10/Daily-ak19.txt">Wednesday, July 10, 2024</a> I finished distributing the new ubuntu.t* and ec2-user.t* archives to the aws-efs of all 29 regions.</li>
 <li>In July of 2024 I am increasing the aws-efs usage from about 40K to about 100K per region.
@@ -130,13 +138,13 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <li>My EFS usage in Oregon had grown to over a GB which costs me over $0.30 a month.  Replicating it to all 28 regions would approach $10.00 a month cost.  I tested adding the value to the instance tags so I won't have to make 28 versions of each of the over 15 cloud-init files.  Additional name pair tags could be used to reduce the number of cloud-init files.  I dropped using the EFS tag because it was easy after I had the aws credentials which is one of the secrets I want on the private EFS.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20240801051432
+Cached time: 20241208004745
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.004 seconds
+CPU time usage: 0.005 seconds
 Real time usage: 0.005 seconds
-Preprocessor visited node count: 37/1000000
+Preprocessor visited node count: 36/1000000
 Post‐expand include size: 100/2097152 bytes
 Template argument size: 0/2097152 bytes
 Highest expansion depth: 2/100
@@ -149,27 +157,20 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20240801051432 and revision id 7979. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20241208004745 and revision id 8043. Rendering was triggered because: page-view
  -->
 </div>
 </div>
 <!-- end content -->
-</p>
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7979">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=7979</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8043">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8043</a>"</div>
 <ul>
-<li><a href="#Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">1 Mount the LAM aws-efs for the region the instance was launched in</a></li>
-<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">2 An EFS by default can be accessed only from the region it is created in</a></li>
-<li><a href="#Create_an_EFS_in_a_region">3 Create an EFS in a region</a></li>
-<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">4 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
-<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">5 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
-<li><a href="#Log">6 Log</a></li>
+<li><a href="#The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">1 The (AWS) Elastic File System (EFS) metadata directory is obsolete</a></li>
+<li><a href="#Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">2 Mount the LAM aws-efs for the region the instance was launched in</a></li>
+<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">3 An EFS by default can be accessed only from the region it is created in</a></li>
+<li><a href="#Create_an_EFS_in_a_region">4 Create an EFS in a region</a></li>
+<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">5 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
+<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">6 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
+<li><a href="#Log">7 Log</a></li>
 </ul>
-</div>
-<p align=right>
-<a href="#top" name="tail"><img border="0" src="../ScrollUp.gif" alt="up" />This page
-<img border="0" src="../ScrollUp.gif" alt="up" /></a> was last updated
-
- Wednesday, July 31, 2024 @ 9:37:24 PM (Alaska Time)
-</p>
 </body></html>
