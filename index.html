@@ -45,7 +45,7 @@ LAMurakami GitLab/GitHub Pages
 </h1>
 <br class="clearit">
 <!-- start content -->
-<div id="mw-content-text" lang="en" dir="ltr"><div>
+<div id="mw-content-text"><div lang="en" dir="ltr">
 
 <h2><span id="Welcome_to_the_LAMurakami_GitLab.2FGitHub_Pages_Static_Website"></span><span id="Welcome_to_the_LAMurakami_GitLab/GitHub_Pages_Static_Website">Welcome to the LAMurakami <a rel="nofollow" href="https://lamurakami.gitlab.io">GitLab</a>/<a rel="nofollow" href="https://lamurakami.github.io">GitHub</a> Pages Static Website</span></h2>
 <ul><li><a rel="nofollow" href="https://gitlab.com/LAMurakami">https://gitlab.com/LAMurakami</a> GitLab user for all my Repos - <a rel="nofollow" href="https://gitlab.com/aws-lam">https://gitlab.com/aws-lam</a> - My GitLab Pages Group
@@ -54,37 +54,64 @@ LAMurakami GitLab/GitHub Pages
 <li>Pipeline defined by the <a rel="nofollow" href="https://gitlab.com/LAMurakami/lamurakami.gitlab.io/-/blob/master/.gitlab-ci.yml?ref_type=heads">.gitlab-ci.yml</a> YAML file to deploy plain html to GitLab Pages</li></ul></li></ul></li>
 <li><a rel="nofollow" href="https://github.com/LAMurakami">https://github.com/LAMurakami</a> GitHub user for all my Repos
 <ul><li><a rel="nofollow" href="https://lamurakami.github.io">https://lamurakami.github.io</a> - My GitHub Pages website with Enforce HTTPS specified
-<ul><li>Published from master branch of <a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io">https://github.com/LAMurakami/lamurakami.github.io</a> repo</li>
-</ul></li></ul></li>
+<ul><li>Published from master branch of <a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io">https://github.com/LAMurakami/lamurakami.github.io</a> repo</li></ul></li></ul></li>
 <li><a rel="nofollow" href="https://lamurakami.github.io/blog">https://lamurakami.github.io/blog</a> - LAMurakami Blog and Websites collection on GitHub Pages
 <ul><li>Published from gh-pages branch of the <a rel="nofollow" href="https://github.com/LAMurakami/blog">https://github.com/LAMurakami/blog</a> repo</li></ul></li>
-<li><a href="About" title="About">About</a>- About LAMurakami GitLab/GitHub Pages</li>
-</ul>
+<li><a href="/a/LAMurakami_GitHub_About" title="LAMurakami GitHub About">LAMurakami GitHub About</a>- About LAMurakami GitLab/GitHub Pages</li></ul>
 <h2><span id="Why_GitLab_and_GitHub.3F"></span><span id="Why_GitLab_and_GitHub?">Why GitLab and GitHub?</span></h2>
 <p>In 2015 I created the GitHub account as a "The Data Scientist's Toolbox Task" and it became my default remote for repos that were to be made public.  In 2023 when I started investigating the transition to IPv6 to avoid paying for a public IPv4 address I found that GitHub does not support IPv6.  Dealing with it became one of many IPv6 only workarounds I developed.  In 2024 I created the GitLab account after seeing many complaining about the GitHub lack of IPv6 support say that moving to GitLab is the answer.
-</p><p>One of the main advantages of GitHub public repos was the ability to link to files and even changes in documentation.  I now have a lot of links to GitHub in my documentation.  I will move to links on GitLab instead but may never change all the links I previously created.  It is possible GitHub will remedy the IPv6 deficiencies and will be as good as GitLab for me.  It is not too much trouble for me to update both remotes when making changes which is actually three since I also have a private remote.
-</p><p>New links to source will be to GitLab but I may never get around to fixing all the links to GitHub.  GitHub Pages is deployed to servers that support both IPv4 and IPv6 but should always link to the copy of source on GitLab or the links will be broken for IPv6 only users.
+</p><p>One of the main advantages of GitHub public repos was the ability to link to files and even changes in documentation.  I now have a lot of links to GitHub in my documentation.  New links to source will be to GitLab but I may never get around to fixing all the links to GitHub.  It is possible GitHub will remedy the IPv6 deficiencies and will be as good as GitLab for me.  It is not too much trouble for me to update both remotes when making changes which is actually three since I also have a private remote.
+</p><p>GitHub Pages is deployed to servers that support both IPv4 and IPv6 but should always link to the copy of source on GitLab or the links will be broken for IPv6 only users.
 </p>
 <h2><span id="LAM_Alaska_git_repository_store">LAM Alaska git repository store</span></h2>
 <p>I maintain a copy of all the repositories that are publicly available on GitLab/GitHub in a private repository store that is a component of a LAM Alaska clone.  This remote also has repositories that will not be made public including remote copies of the etckeeper repository for all my machines and the lam repo that has the code for the secure side of LAM Alaska.  I support git@server and https:// access to gitweb but only for an authenticated user.
 </p>
+<table cellspacing="5">
+<tbody><tr>
+<th colspan="4"><big>SSH URLS for git remotes</big>
+</th></tr>
+<tr>
+<td>Remote</td>
+<td>SSH URL</td>
+<td>Published site</td>
+<td>Public https: source URL
+</td></tr>
+<tr>
+<td>aws</td>
+<td>git@aws:lamurakami.github.io</td>
+<td>Private repo store
+</td></tr>
+<tr>
+<td>github</td>
+<td>git@github.com:LAMurakami/lamurakami.github.io</td>
+<td><a rel="nofollow" href="https://lamurakami.github.io/">LAMurakami GitHub Pages</a></td>
+<td><a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io">https://github.com/LAMurakami/lamurakami.github.io</a>
+</td></tr>
+<tr>
+<td>gitlab</td>
+<td>git@gitlab.com:LAMurakami/lamurakami.gitlab.io</td>
+<td><a rel="nofollow" href="https://lamurakami.gitlab.io/">LAMurakami GitLab Pages</a></td>
+<td><a rel="nofollow" href="https://gitlab.com/LAMurakami/lamurakami.gitlab.io">https://gitlab.com/LAMurakami/lamurakami.gitlab.io</a>
+</td></tr></tbody></table>
+<p>A single master branch of this repo is used to publish to both GitLab Pages and GitHub pages.  The update of the published pages is triggered when a new commit of the master branch of the repo is pushed to the respective remote.  Both GitLab and GitHub require the repo name to be in a specific format for publication as my main page on the two platforms.
+</p>
 <h2><span id="GitLab_has_a_public_project_for_repos_that_have_recent_activity">GitLab has a public project for repos that have recent activity</span></h2>
 <p>I initially copied 9 repositories used for a LAM Alaska Clone on AWS then the gci and qemu repos used for a LAM Alaska LAN clone.  I then added the lamurakami.gitlab.io which is lamurakami.github.io on GitHub and is the source of my GitHub Pages and configured it to be the source of my GitLab Pages as well.
-</p><p><a rel="nofollow" href="https://gitlab.com/LAMurakami">LAMurakami /</a>
-<a rel="nofollow" href="https://gitlab.com/LAMurakami/lamurakami.gitlab.io">lamurakami.gitlab.io</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam">aws-lam /</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/aws">aws</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl">no-ssl</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/sites">sites</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/arsc">arsc</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/cabo">cabo</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/z">z</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/blinkenshell">blinkenshell</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/olnes">olnes</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/larryforalaska">larryforalaska</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/gci">gci</a>
-<a rel="nofollow" href="https://gitlab.com/aws-lam/qemu">qemu</a>
 </p>
+<ul><li><a rel="nofollow" href="https://gitlab.com/LAMurakami">LAMurakami /</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/LAMurakami/lamurakami.gitlab.io">lamurakami.gitlab.io</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam">aws-lam /</a>
+<ul><li><a rel="nofollow" href="https://gitlab.com/aws-lam/aws">aws</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl">no-ssl</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/sites">sites</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/arsc">arsc</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/cabo">cabo</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/z">z</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/blinkenshell">blinkenshell</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/olnes">olnes</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/larryforalaska">larryforalaska</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/gci">gci</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/qemu">qemu</a></li></ul></li></ul>
 <h2><span id="Repos_for_LAM_AWS_Linux_Apache_MariaDB_in_the_cloud">Repos for <a rel="nofollow" href="http://aws.lam1.us">LAM AWS Linux Apache MariaDB in the cloud</a></span></h2>
 <p>After publishing some GitHub Pages I decided that I should upload more repos just for the value for documentation.
 </p>
@@ -109,12 +136,12 @@ LAMurakami GitLab/GitHub Pages
 <ul><li>Published from <a rel="nofollow" href="https://github.com/LAMurakami/rhel-skel/tree/master/docs">/docs directory of master branch</a> with Enforce HTTPS</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20240730014449
+Cached time: 20250108101118
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.005 seconds
-Real time usage: 0.005 seconds
+CPU time usage: 0.007 seconds
+Real time usage: 0.007 seconds
 Preprocessor visited node count: 22/1000000
 Post‐expand include size: 0/2097152 bytes
 Template argument size: 0/2097152 bytes
@@ -128,13 +155,13 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:362-0!canonical and timestamp 20240730014449 and revision id 7972. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:362-0!canonical and timestamp 20250108101118 and revision id 8386. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=LAMurakami_GitHub_Pages&amp;oldid=7972">https://ak20.lam1.us/A/index.php?title=LAMurakami_GitHub_Pages&amp;oldid=7972</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=LAMurakami_GitHub_Pages&amp;oldid=8386">https://ak20.lam1.us/A/index.php?title=LAMurakami_GitHub_Pages&amp;oldid=8386</a>"</div>
 <ul>
 <li><a href="#Welcome_to_the_LAMurakami_GitLab/GitHub_Pages_Static_Website">1 Welcome to the LAMurakami GitLab/GitHub Pages Static Website</a></li>
 <li><a href="#Why_GitLab_and_GitHub?">2 Why GitLab and GitHub?</a></li>
@@ -150,6 +177,6 @@ Transclusion expansion time report (%,ms,calls,template)
 <a href="#top" name="tail"><img border="0" src="ScrollUp.gif" alt="up" />This page
 <img border="0" src="ScrollUp.gif" alt="up" /></a> was last updated
 
-Monday, July 29, 2024 @ 7:19:03 PM (Alaska Time)
+Wednesday, January 8, 2025 @ 1:22:50 AM (Alaska Time)
 </p>
 </body></html>
