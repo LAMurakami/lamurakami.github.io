@@ -45,42 +45,29 @@
 </h1>
 <br class="clearit">
 <!-- start content -->
-<div id="mw-content-text" lang="en" dir="ltr"><div>
+<div id="mw-content-text"><div lang="en" dir="ltr">
 
-<ul><li><a rel="nofollow" href="https://ak20.lam1.us/a/Amazon_Web_Services_(AWS)">Amazon Web Services (AWS)</a> &#160; <a rel="nofollow" href="http://aws.lam1.us/About">Linux Apache MariaDB in the cloud</a> &#160; <a rel="nofollow" href="https://ak20.lam1.us/a/Modify_AWS_VPC_for_IPv6">Modify AWS VPC for IPv6</a></li>
+<ul><li><a rel="nofollow" href="https://ak20.lam1.us/a/Amazon_Web_Services_(AWS)">Amazon Web Services (AWS)</a> &#160; <a rel="nofollow" href="http://aws.lam1.us/About">Linux Apache MariaDB in the cloud</a> &#160; <a rel="nofollow" href="https://lamurakami.github.io/blog/2025/01/16/Modify_AWS_VPC_for_IPv6.html">Modify AWS VPC for IPv6</a></li>
 <li>The aws-efs directory on my <a rel="nofollow" href="https://lamurakami.gitlab.io/aws-efs">GitLab</a>/<a rel="nofollow" href="https://lamurakami.github.io/aws-efs">GitHub</a> pages website <a rel="nofollow" href="https://gitlab.com/LAMurakami/lamurakami.gitlab.io/-/tree/master/aws-efs?ref_type=heads">GitLab project</a> <a rel="nofollow" href="https://github.com/LAMurakami/lamurakami.github.io/tree/master/aws-efs">GitHub repository</a></li>
 <li><a rel="nofollow" href="https://ak20.lam1.us/Bk2/aws/efs/">Amazon Web Services (AWS) Elastic File System (EFS)</a> us-west-2 Oregon backup on ak20</li></ul>
 <p>Early in my experience with AWS I discovered EFS and made use of a persistent parallel file system as a tool for launching a clone of the LAM Alaska website on demand.  I initially chose the us-west-2 Oregon region to operate in in 2017 and didn't use another region until 2024.  By that time success was defined as the ability to launch a fully functional clone of the LAM Alaska website with data from backups created from the main website within the last 24 hours.
 </p>
-</div>
 
 <h2><span id="The_.28AWS.29_Elastic_File_System_.28EFS.29_metadata_directory_is_obsolete"></span><span id="The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">The (AWS) Elastic File System (EFS) metadata directory is obsolete</span></h2>
 <p>As of August 2024 the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> replaces the (AWS) Elastic File System (EFS) metadata directory method used when I was addressing the IPv6 only workaround for git before putting my public git repos on GitLab that can be accessed with IPv6 as well as IPv4.
 </p>
 <h2><span id="Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">Mount the LAM aws-efs for the region the instance was launched in</span></h2>
-<p>I created the aws-efs directory on my github pages website to allow metadata retrieval somewhat like the Instance Metadata Service as implemented on AWS.  I use "cloud-init query" to retrieve the REGION and then retrieve the EFS DNS name used to mount the volume with NFS from my github pages website.
-</p><p>The cloud-init section to determine the EFS name for the region this instance was launched in:
+<p>I use "cloud-init query" to retrieve the REGION and then the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> to mount the filesystem.
+</p><p>The cloud-init section to determine the region this instance was launched in and mount the EFS:
 </p>
 <pre> - echo
- - echo 'AWS LAM Get EFS for REGION'
+ - echo 'AWS LAM Adding nfs4 mount to AWS LAM VPC Elastic File System'
  - export REGION=$(cloud-init query region)
- - EFS=$(curl -s https://lamurakami.github.io/aws-efs/${REGION})
- - echo "REGION=${REGION} EFS=${EFS}"
+ - /var/www/aws/aws-efs-mount.bash
 </pre>
-<p>The availability of this metadata to the cloud-init service during initialization allows me to mount the Elastic File System (EFS) for that region with NFS.  The github pages website seems to be high availability and reliable and provides both IPv4 and IPv6 connectivity unlike the main github site where repositories are housed which as of Tuesday, February 20, 2024 does not provide IPv6 access.
-</p><p>The cloud-init section to mount the AWS VPC Elastic File System with nfs4:
-</p>
-<pre> - echo
- - echo 'AWS LAM Adding nfs4 mount to AWS VPC Elastic File System'
- - mkdir /mnt/efs
- - nfsOpt="_netdev,noresvport,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0"
- - echo "${EFS}:/ /mnt/efs nfs4 ${nfsOpt}" &gt;&gt; /etc/fstab
- - systemctl daemon-reload
- - mount -a -t nfs
-</pre>
-<p>The above mount section has been included in my cloud-init files since I became dependant on it's availability and ease of use but until 2024 when I started expaning to other regions the file system name was hard coded.  When a EFS is created within a region a unique file system ID is assigned and a DNS name like &lt;file system ID&gt;.efs.&lt;region&gt;.amazonaws.com is assigned but is only usable in the VPC where the EFS was created and by default is accessable only in that region.
-</p><p>During the process of modifying my scripts to work in any region I reduced the EFS dependency to the ubuntu.tgz and ec2-user.tgz user resource files.  The ubuntu.tgz file includes some private resources including aws and duckdns credentials specific to an AWS LAM clone.
-</p><p>Many of the other dependencies were moved from AWS EFS to a private AWS S3 bucket.  Accessing the private AWS S3 bucket requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS is a requirement to accessing the private AWS S3 bucket.
+<p>The mount EFS section has been included in my cloud-init files since I became dependent on it's availability and ease of use but until 2024 when I started expanding to other regions the file system name was hard coded.  When a EFS is created within a region a unique file system ID is assigned and a DNS name like &lt;file system ID&gt;.efs.&lt;region&gt;.amazonaws.com is assigned but is only usable in the VPC where the EFS was created and by default is accessable only in that region.
+</p><p>During the process of modifying my scripts to work in any region I reduced the EFS dependency to the ubuntu.tgz and ec2-user.tgz user resource files.  These files include some private resources including aws and duckdns credentials specific to an AWS LAM clone.
+</p><p>Many of the other dependencies were copied from AWS EFS to a private AWS S3 bucket.  Accessing the private AWS S3 bucket requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS is a requirement to accessing the private AWS S3 bucket.
 </p>
 <h2><span id="An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">An EFS by default can be accessed only from the region it is created in</span></h2>
 <p>By default EC2 instances running in multiple Availability Zones within the same AWS Region can access the Elastic File System (EFS) for that region.  An EFS can be created to serve only One Availability Zone but by default a mount target is created for each Availability Zone within the region.
@@ -138,32 +125,32 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <li>My EFS usage in Oregon had grown to over a GB which costs me over $0.30 a month.  Replicating it to all 28 regions would approach $10.00 a month cost.  I tested adding the value to the instance tags so I won't have to make 28 versions of each of the over 15 cloud-init files.  Additional name pair tags could be used to reduce the number of cloud-init files.  I dropped using the EFS tag because it was easy after I had the aws credentials which is one of the secrets I want on the private EFS.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20241208004745
+Cached time: 20250116074309
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
 CPU time usage: 0.005 seconds
 Real time usage: 0.005 seconds
-Preprocessor visited node count: 36/1000000
+Preprocessor visited node count: 31/1000000
 Post‐expand include size: 100/2097152 bytes
 Template argument size: 0/2097152 bytes
 Highest expansion depth: 2/100
 Expensive parser function count: 0/100
 Unstrip recursion depth: 0/20
-Unstrip post‐expand size: 46/5000000 bytes
+Unstrip post‐expand size: 0/5000000 bytes
 -->
 <!--
 Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20241208004745 and revision id 8043. Rendering was triggered because: page-view
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250116074309 and revision id 8444. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8043">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8043</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8444">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8444</a>"</div>
 <ul>
 <li><a href="#The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">1 The (AWS) Elastic File System (EFS) metadata directory is obsolete</a></li>
 <li><a href="#Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">2 Mount the LAM aws-efs for the region the instance was launched in</a></li>
@@ -173,4 +160,5 @@ Transclusion expansion time report (%,ms,calls,template)
 <li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">6 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
 <li><a href="#Log">7 Log</a></li>
 </ul>
+</div>
 </body></html>
