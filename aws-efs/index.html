@@ -53,11 +53,64 @@
 <p>Early in my experience with AWS I discovered EFS and made use of a persistent parallel file system as a tool for launching a clone of the LAM Alaska website on demand.  I initially chose the us-west-2 Oregon region to operate in in 2017 and didn't use another region until 2024.  By that time success was defined as the ability to launch a fully functional clone of the LAM Alaska website with data from backups created from the main website within the last 24 hours.
 </p>
 
+<h2><span id="Amazon_Storage_Elastic_File_System_.28EFS.29_pricing"></span><span id="Amazon_Storage_Elastic_File_System_(EFS)_pricing">Amazon Storage Elastic File System (EFS) pricing</span></h2>
+<p>The pricing figures used are for the us-west-2 Oregon region which is my main region and one of the least expensive regions for AWS resources.
+</p>
+<h3><span id="Standard.2C_General_Purpose.2C_Bursting_EFS.2C_as_was_available_in_2017"></span><span id="Standard,_General_Purpose,_Bursting_EFS,_as_was_available_in_2017">Standard, General Purpose, Bursting EFS, as was available in 2017</span></h3>
+<p>EFS Can be accessed by 1 to 1000s of EC2 instances concurrently.  A default Regional EFS can be accessed by instances in multiple AZs.  EFS can be used as network file system for on-premise servers too using AWS Direct Connect.
+</p>
+<ul><li>$0.30 per GB-month of storage used (Most expensive AWS storage option) - $3,600.00 / TB-Year
+<ul><li>No charge for access from within the region</li>
+<li>Every file system object is redundantly stored across multiple Availability Zones so it can survive one AZ failure.  Replicas are made within the region.  Data stored in AWS EFS stays in the region.</li>
+<li>No public SLA for availability or durability.</li></ul></li>
+<li>$1.50 per month (5 GB-month) discounted during Free-Tier</li>
+<li>$0.01 per GB for EFS File Sync to the region</li></ul>
+<h3><span id="One_Zone_and_Lifecycle_Managed_EFS_storage_classes">One Zone and Lifecycle Managed EFS storage classes</span></h3>
+<p>Since I first started using EFS AWS has added One Zone and EFS storage classes.  There are also Performance and Throughput mode options that may not have been available in 2017 when I created my first EFS.
+</p><p>After investigation into the new EFS options I decided that the Zz backup if moved to EFS from EBS would cost me less.  I did testing and forced almost all to go to the Infrequent Access Storage Class and tested that the daily backup does not bring unchanged target files back online and that access from the web interface is still an acceptable latency.  I was surprised at the cost of Elastic Throughput reads and writes to the One Zone Lifecycle Managed EFS which is significant and could really cost me if access isn't really infrequent.
+</p><p>Although storeage prices can be reduced by One Zone and Lifecycle Managed EFS storage classes the charges for throughput and data access could easily exceed any saving if access is to frequent.
+</p>
+<h3><span id="Regional_EFS_with_Elastic_Throughput_and_Lifecycle_Management">Regional EFS with Elastic Throughput and Lifecycle Management</span></h3>
+<p>Standard storage is the same as in an EFS without Lifecycle Management but the Infrequent Access storage class can save nearly 95% and Archive storage class even more but Reads and Tiering costs could eat up the savings along with the minimum billable file size and minimum storage duration.
+</p>
+<h4><span id="Storage">Storage</span></h4>
+<ul><li>$0.016 - Infrequent Access (GB-Month) - For inactive data accessed only a few times each quarter - $192 / TB-Year</li>
+<li>$0.008 - Archive (GB-Month) - For inactive, long-lived data accessed only a few times each year or less - $96 / TB-Year</li></ul>
+<h4><span id="Throughput_and_data_access">Throughput and data access</span></h4>
+<ul><li>$0.06 - Writes (per GB transferred) - All storage classes</li>
+<li>$0.03 - Reads (per GB transferred) - All storage classes</li>
+<li>$0.01 - Reads / Tiering - Infrequent Access</li>
+<li>$0.03 - Reads / Tiering - Archive</li>
+<li>IA and Archive have a minimum billable file size of 128 KiB</li>
+<li>Archive storage is charged for a minimum storage duration of 90 days, even if the data is deleted before 90 days.</li></ul>
+<h3><span id="One_Zone_EFS_with_Elastic_Throughput_and_Lifecycle_Management">One Zone EFS with Elastic Throughput and Lifecycle Management</span></h3>
+<p>Standard storage in a One Zone EFS is the smae price as Infrequent Access in a Regional EFS
+</p>
+<h4><span id="Storage_2">Storage</span></h4>
+<ul><li>$0.16 - Standard (GB-Month - High-performance SSD storage for your most frequently-accessed data</li>
+<li>$0.0133 - Infrequent Access (GB-Month) - Cost-optimized storage for inactive data accessed every few months - $159.60 / TB-Year</li></ul>
+<h4><span id="Throughput_and_data_access_2">Throughput and data access</span></h4>
+<ul><li>$0.06 - Writes (per GB transferred) - Elastic Throughput</li>
+<li>$0.03 - Reads (per GB transferred) - Elastic Throughput</li>
+<li>$0.01 - Reads / Tiering - Infrequent Access</li></ul>
 <h2><span id="The_.28AWS.29_Elastic_File_System_.28EFS.29_metadata_directory_is_obsolete"></span><span id="The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">The (AWS) Elastic File System (EFS) metadata directory is obsolete</span></h2>
 <p>As of August 2024 the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> replaces the (AWS) Elastic File System (EFS) metadata directory method used when I was addressing the IPv6 only workaround for git before putting my public git repos on GitLab that can be accessed with IPv6 as well as IPv4.
+</p><p>Although I no longer use the metadata directory for initialization it is still the published location for this page.
 </p>
-<h2><span id="Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">Mount the LAM aws-efs for the region the instance was launched in</span></h2>
-<p>I use "cloud-init query" to retrieve the REGION and then the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> to mount the filesystem.
+<h2><span id="Mount_the_LAM_aws-efs_for_the_region_and_Availability_Zone_the_instance_was_launched_in">Mount the LAM aws-efs for the region and Availability Zone the instance was launched in</span></h2>
+<h3><span id="AWS_LAM_VPC_Elastic_File_Systems">AWS LAM VPC Elastic File Systems</span></h3>
+<p>In 2025 I expanded to three filesystems for each instance (where supported):
+</p>
+<ul><li>aws-efs A standard EFS, as was available in 2017, for each region
+<ul><li>Performance mode: General Purpose - Throughput mode: Bursting - Lifecycle management: None</li></ul></li>
+<li>aws-efs2 A Lifecycle Managed EFS for each region
+<ul><li>Performance mode: General Purpose - Throughput mode: Elastic - Lifecycle management: 30 day Transition into Infrequent Access (IA), 90 day Transition into Archive, Transition back into Standard On first access</li></ul></li>
+<li>aws-efs3 A One Zone Lifecycle Managed EFS for each Availability Zone (where supported)
+<ul><li>Performance mode: General Purpose - Throughput mode: Elastic - Lifecycle management: 30 day Transition into Infrequent Access (IA), No Transition into Archive, Transition back into Standard On first access</li></ul></li></ul>
+<p>All 32 REGIONs enabled for my AWS account, as of January 2025, support Standard and Lifecycle Management EFS but a number of Availability Zones including all for 10 REGIONs do not yet support One Zone Lifecycle Managed EFS.  I have detailed those with <b> No One Zone EFS</b> support in the <a rel="nofollow" href="https://lamurakami.github.io/blog/2025/02/07/I_created_63_One_Zone_Lifecycle_Managed_AWS_EFS.html">AWS Availability Zone subnet id</a> page I created while testing One Zone EFS for every Availability Zone that supports it.
+</p><p>In 2017 when I created the EFS in the us-west-2 Oregon region it's usage in my LAM Alaska Clone project was based on the $0.30 / GB Month pricing which was the most expensive storage available but was extremely convenient.  EFS is mounted on Linux systems as a Network File System (NFS) with the ability to be accessed by thousands of instances and I don't have to manage the server.  It is persistent storage that doesn't require a running instance and although expensive I only pay for storage used form the very large capacity available.
+</p><p>The systems using Lifecycle Management allow simple policies that can move data between standard storage and the new Infrequent Access (IA) and Archive storage classes that are less expensive than Standard storage.  The One Zone EFS is also cheaper than standard storage and is available to instances in a single Availability Zone instead of all in the region and includes the IA storage class for the cheapest still.
+</p><p>I use "cloud-init query" to retrieve the REGION and then the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> to mount the filesystem.
 </p><p>The cloud-init section to determine the region this instance was launched in and mount the EFS:
 </p>
 <pre> - echo
@@ -65,14 +118,14 @@
  - export REGION=$(cloud-init query region)
  - /var/www/aws/aws-efs-mount.bash
 </pre>
-<p>The mount EFS section has been included in my cloud-init files since I became dependent on it's availability and ease of use but until 2024 when I started expanding to other regions the file system name was hard coded.  When a EFS is created within a region a unique file system ID is assigned and a DNS name like &lt;file system ID&gt;.efs.&lt;region&gt;.amazonaws.com is assigned but is only usable in the VPC where the EFS was created and by default is accessable only in that region.
+<p>The mount EFS section has been included in my cloud-init files since I became dependent on it's availability and ease of use but until 2024 when I started expanding to other regions the file system name was hard coded.  When a EFS is created within a region a unique file system ID is assigned and a DNS name like &lt;file system ID&gt;.efs.&lt;region&gt;.amazonaws.com is assigned but is only usable in the VPC where the EFS was created and by default is accessible only in that region.
 </p><p>During the process of modifying my scripts to work in any region I reduced the EFS dependency to the ubuntu.tgz and ec2-user.tgz user resource files.  These files include some private resources including aws and duckdns credentials specific to an AWS LAM clone.
 </p><p>Many of the other dependencies were copied from AWS EFS to a private AWS S3 bucket.  Accessing the private AWS S3 bucket requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS is a requirement to accessing the private AWS S3 bucket.
 </p>
 <h2><span id="An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">An EFS by default can be accessed only from the region it is created in</span></h2>
 <p>By default EC2 instances running in multiple Availability Zones within the same AWS Region can access the Elastic File System (EFS) for that region.  An EFS can be created to serve only One Availability Zone but by default a mount target is created for each Availability Zone within the region.
 </p><p>A Domain Name Service (DNS) name is assigned for each EFS which resolves to the IP address of the EFS mount target in the same Availability Zone as the EC2 instance querying the DNS.  Connectivity and DNS Name resolution is only available on the private IPv4 subnets of the VPC.
-</p><p>I have decided not to use AWS Backup, EFS Replication, lifecycle management or encryption on the filesystems I am creating in additional regions.  I am not sure any of these features were available when I created the Oregon EFS years ago.
+</p><p>I have decided not to use AWS Backup, EFS Replication or encryption on the filesystems I am creating in additional regions.  I am not sure any of these features were available when I created the Oregon EFS years ago.  The Lifecycle Management and One Zone features were introduced since I started using EFS.
 </p>
 <h2><span id="Create_an_EFS_in_a_region">Create an EFS in a region</span></h2>
 <ul><li>Check 172.31.0.0/16 NFS for EFS inbound rule in Security Group</li>
@@ -110,9 +163,10 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 </p>
 <h2><span id="Log">Log</span></h2>
 <ul><li>Published Page locations: <a rel="nofollow" href="https://lamurakami.gitlab.io/aws-efs/">https://lamurakami.gitlab.io/aws-efs/</a> <a rel="nofollow" href="https://lamurakami.github.io/aws-efs/">https://lamurakami.github.io/aws-efs/</a></li>
+<li>As of February 2025 I have a standard EFS, as was available in 2017, and a Lifecycle Managed EFS for all 32 regions I have access to.
+<ul><li>I have 63 One Zone Lifecycle Managed AWS EFS for each Availability Zone where it is supported that I have access to.</li></ul></li>
 <li>On Saturday, August 24, 2024 I enabled my 30th. AWS region but EFS is not yet available in the brand new Asia Pacific (Malaysia) region.
-<ul><li>I haven't launched an instance in the new region but did have the thought that I could install Bash User resources using the aws ssh connectivity and elimanate the need for a local EFS in every region.</li>
-<li>I had just completed the change to use aws-efs-mount.bash instead of the (AWS) Elastic File System (EFS) metadata directory method to mount the AWS LAM VPC EFS unique filesystem for the region the instance was launched in.</li></ul></li>
+<ul><li>I had just completed the change to use aws-efs-mount.bash instead of the (AWS) Elastic File System (EFS) metadata directory method to mount the AWS LAM VPC EFS unique filesystem for the region the instance was launched in.</li></ul></li>
 <li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2407/2024-07-28/Daily-ak19.txt">Sunday, July 28, 2024</a> I published to <a rel="nofollow" href="https://lamurakami.gitlab.io/aws-efs">GitLab Pages</a> aws well as <a rel="nofollow" href="https://lamurakami.github.io/aws-efs">GitHub Pages</a>.</li>
 <li>On <a rel="nofollow" href="https://ak20.lam1.us/Zz/z24/z2407/2024-07-10/Daily-ak19.txt">Wednesday, July 10, 2024</a> I finished distributing the new ubuntu.t* and ec2-user.t* archives to the aws-efs of all 29 regions.</li>
 <li>In July of 2024 I am increasing the aws-efs usage from about 40K to about 100K per region.
@@ -125,13 +179,13 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <li>My EFS usage in Oregon had grown to over a GB which costs me over $0.30 a month.  Replicating it to all 28 regions would approach $10.00 a month cost.  I tested adding the value to the instance tags so I won't have to make 28 versions of each of the over 15 cloud-init files.  Additional name pair tags could be used to reduce the number of cloud-init files.  I dropped using the EFS tag because it was easy after I had the aws credentials which is one of the secrets I want on the private EFS.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20250116074309
+Cached time: 20250207044141
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.005 seconds
-Real time usage: 0.005 seconds
-Preprocessor visited node count: 31/1000000
+CPU time usage: 0.008 seconds
+Real time usage: 0.008 seconds
+Preprocessor visited node count: 61/1000000
 Post‐expand include size: 100/2097152 bytes
 Template argument size: 0/2097152 bytes
 Highest expansion depth: 2/100
@@ -144,21 +198,43 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250116074309 and revision id 8444. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250207044141 and revision id 8536. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8444">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8444</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8536">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8536</a>"</div>
 <ul>
-<li><a href="#The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">1 The (AWS) Elastic File System (EFS) metadata directory is obsolete</a></li>
-<li><a href="#Mount_the_LAM_aws-efs_for_the_region_the_instance_was_launched_in">2 Mount the LAM aws-efs for the region the instance was launched in</a></li>
-<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">3 An EFS by default can be accessed only from the region it is created in</a></li>
-<li><a href="#Create_an_EFS_in_a_region">4 Create an EFS in a region</a></li>
-<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">5 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
-<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">6 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
-<li><a href="#Log">7 Log</a></li>
+<li><a href="#Amazon_Storage_Elastic_File_System_(EFS)_pricing">1 Amazon Storage Elastic File System (EFS) pricing</a>
+<ul>
+<li><a href="#Standard,_General_Purpose,_Bursting_EFS,_as_was_available_in_2017">1.1 Standard, General Purpose, Bursting EFS, as was available in 2017</a></li>
+<li><a href="#One_Zone_and_Lifecycle_Managed_EFS_storage_classes">1.2 One Zone and Lifecycle Managed EFS storage classes</a></li>
+<li><a href="#Regional_EFS_with_Elastic_Throughput_and_Lifecycle_Management">1.3 Regional EFS with Elastic Throughput and Lifecycle Management</a>
+<ul>
+<li><a href="#Storage">1.3.1 Storage</a></li>
+<li><a href="#Throughput_and_data_access">1.3.2 Throughput and data access</a></li>
+</ul>
+</li>
+<li><a href="#One_Zone_EFS_with_Elastic_Throughput_and_Lifecycle_Management">1.4 One Zone EFS with Elastic Throughput and Lifecycle Management</a>
+<ul>
+<li><a href="#Storage_2">1.4.1 Storage</a></li>
+<li><a href="#Throughput_and_data_access_2">1.4.2 Throughput and data access</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#The_(AWS)_Elastic_File_System_(EFS)_metadata_directory_is_obsolete">2 The (AWS) Elastic File System (EFS) metadata directory is obsolete</a></li>
+<li><a href="#Mount_the_LAM_aws-efs_for_the_region_and_Availability_Zone_the_instance_was_launched_in">3 Mount the LAM aws-efs for the region and Availability Zone the instance was launched in</a>
+<ul>
+<li><a href="#AWS_LAM_VPC_Elastic_File_Systems">3.1 AWS LAM VPC Elastic File Systems</a></li>
+</ul>
+</li>
+<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">4 An EFS by default can be accessed only from the region it is created in</a></li>
+<li><a href="#Create_an_EFS_in_a_region">5 Create an EFS in a region</a></li>
+<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">6 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
+<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">7 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
+<li><a href="#Log">8 Log</a></li>
 </ul>
 </div>
 </body></html>
