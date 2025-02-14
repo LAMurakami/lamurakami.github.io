@@ -44,6 +44,7 @@
 
 </h1>
 <br class="clearit">
+
 <!-- start content -->
 <div id="mw-content-text"><div lang="en" dir="ltr">
 
@@ -54,7 +55,8 @@
 </p>
 
 <h2><span id="Amazon_Storage_Elastic_File_System_.28EFS.29_pricing"></span><span id="Amazon_Storage_Elastic_File_System_(EFS)_pricing">Amazon Storage Elastic File System (EFS) pricing</span></h2>
-<p>The pricing figures used are for the us-west-2 Oregon region which is my main region and one of the least expensive regions for AWS resources.
+<p>Amazon EFS is built to scale on demand to petabytes without disrupting applications, growing and shrinking automatically as you add and remove files.  You pay for usage that includes storage, reads, writes, storage class transitions based on the parameters of the filesystem.
+</p><p>The pricing figures used are for the us-west-2 Oregon region which is my main region and one of the least expensive regions for AWS resources.
 </p>
 <h3><span id="Standard.2C_General_Purpose.2C_Bursting_EFS.2C_as_was_available_in_2017"></span><span id="Standard,_General_Purpose,_Bursting_EFS,_as_was_available_in_2017">Standard, General Purpose, Bursting EFS, as was available in 2017</span></h3>
 <p>EFS Can be accessed by 1 to 1000s of EC2 instances concurrently.  A default Regional EFS can be accessed by instances in multiple AZs.  EFS can be used as network file system for on-premise servers too using AWS Direct Connect.
@@ -110,17 +112,45 @@
 <p>All 32 REGIONs enabled for my AWS account, as of January 2025, support Standard and Lifecycle Management EFS but a number of Availability Zones including all for 10 REGIONs do not yet support One Zone Lifecycle Managed EFS.  I have detailed those with <b> No One Zone EFS</b> support in the <a rel="nofollow" href="https://lamurakami.github.io/blog/2025/02/07/I_created_63_One_Zone_Lifecycle_Managed_AWS_EFS.html">AWS Availability Zone subnet id</a> page I created while testing One Zone EFS for every Availability Zone that supports it.
 </p><p>In 2017 when I created the EFS in the us-west-2 Oregon region it's usage in my LAM Alaska Clone project was based on the $0.30 / GB Month pricing which was the most expensive storage available but was extremely convenient.  EFS is mounted on Linux systems as a Network File System (NFS) with the ability to be accessed by thousands of instances and I don't have to manage the server.  It is persistent storage that doesn't require a running instance and although expensive I only pay for storage used form the very large capacity available.
 </p><p>The systems using Lifecycle Management allow simple policies that can move data between standard storage and the new Infrequent Access (IA) and Archive storage classes that are less expensive than Standard storage.  The One Zone EFS is also cheaper than standard storage and is available to instances in a single Availability Zone instead of all in the region and includes the IA storage class for the cheapest still.
-</p><p>I use "cloud-init query" to retrieve the REGION and then the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> to mount the filesystem.
+</p><p>I use "cloud-init query" to retrieve the REGION and Availability_Zone and then the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> to mount the filesystem.
 </p><p>The cloud-init section to determine the region this instance was launched in and mount the EFS:
 </p>
 <pre> - echo
+ - echo 'AWS LAM Get Availability_Zone from cloud-init values'
+ - export Availability_Zone=$(cloud-init query availability-zone)
+ - echo
  - echo 'AWS LAM Adding nfs4 mount to AWS LAM VPC Elastic File System'
  - export REGION=$(cloud-init query region)
- - /var/www/aws/aws-efs-mount.bash
+ - /var/www/aws/<a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash</a>
 </pre>
 <p>The mount EFS section has been included in my cloud-init files since I became dependent on it's availability and ease of use but until 2024 when I started expanding to other regions the file system name was hard coded.  When a EFS is created within a region a unique file system ID is assigned and a DNS name like &lt;file system ID&gt;.efs.&lt;region&gt;.amazonaws.com is assigned but is only usable in the VPC where the EFS was created and by default is accessible only in that region.
 </p><p>During the process of modifying my scripts to work in any region I reduced the EFS dependency to the ubuntu.tgz and ec2-user.tgz user resource files.  These files include some private resources including aws and duckdns credentials specific to an AWS LAM clone.
-</p><p>Many of the other dependencies were copied from AWS EFS to a private AWS S3 bucket.  Accessing the private AWS S3 bucket requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS is a requirement to accessing the private AWS S3 bucket.
+</p><p>Many of the other dependencies can be accessed from the us-west-2 Oregon EFS using the aws scp connectivity I set up during initialization.  The aws scp connectivity requires credentials which are in the ubuntu.tgz and ec2-user.tgz user resource files so mounting the EFS for the region is a requirement for accessing the us-west-2 Oregon EFS using the aws scp connectivity.
+</p>
+<h2><span id="Create_locate_database_for_nfs_mounted_efs">Create locate database for nfs mounted efs</span></h2>
+<h3><span id="The_find_and_locate_commands_are_two_powerful_tools_to_search_for_one_or_more_particular_files">The find and locate commands are two powerful tools to search for one or more particular files</span></h3>
+<p>The find command searches for files in real time, meaning that it will crawl the specified directory for your search query when you execute it.  The find command works well on fast local filesystems.  It can be real slow on large remote filesystems.
+</p><p>The locate command is fast because it uses a database which is optimized for the locate searches.  It's main limitation is that it is dependent on the database and only reports on files that were present the last time the database was updated.  It also can’t perform as granular of a search as find, as it simply matches files based on their name, although it does accept complicated syntax such as regex.
+</p><p>Both the find and locate commands have considerations and constraints when searching a remote filesystem.  Since an EFS is mounted using NFS and can be of massive size, how to search it is worth consideration.  I have decided to support searching the AWS EFS using locate and custom database files for the specific filesystems mounted.
+</p>
+<h3><span id="A_NFS_mounted_filesystem_is_not_included_in_a_locate_database_by_default.">A NFS mounted filesystem is not included in a locate database by default.</span></h3>
+<p>There are some good reasons that NFS mounted filesystems are not included in the locate database.  One is that this very intensive IO operation could slam the NFS server and/or use a lot of the network bandwidth.  A second very related reason is that the NFS mounted filesystem is usually mounted on many remote systems.  This is the main reason for setting up a NFS server.  Bad as it might be to have one remote system add the entries for all the files on a remote filesystem in it's local database it is worse to have multiple systems do this.
+</p>
+<h3><span id="Create.2FUpdate_locate_database_upon_initialization"></span><span id="Create/Update_locate_database_upon_initialization">Create/Update locate database upon initialization</span></h3>
+<h4><span id="Support_both_plocate_and_mlocate_utilities">Support both plocate and mlocate utilities</span></h4>
+<p>Amazon Linux 2023 and Amazon Linux 2 are still using mlocate.  Ubuntu 24.04 Noble, 22.04 Jammy, and Debian all use the newer plocate utility.
+</p><p>Depending on the Operating System and which locate utility is installed one of the following sets of programs is used during initialization.
+</p>
+<ul><li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/Create-update-efs-plocate-db.bash?ref_type=heads">Create-update-efs-plocate-db.bash</a>
+<ul><li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/local_scripts/plocate-mnt-efs.sh?ref_type=heads">plocate-mnt-efs.sh</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/local_scripts/plocate-mnt-efs2.sh?ref_type=heads">plocate-mnt-efs2.sh</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/local_scripts/plocate-mnt-efs3.sh?ref_type=heads">plocate-mnt-efs3.sh</a></li></ul></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/Create-update-efs-mlocate-db.bash?ref_type=heads">Create-update-efs-mlocate-db.bash</a>
+<ul><li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/local_scripts/mlocate-mnt-efs.sh?ref_type=heads">mlocate-mnt-efs.sh</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/local_scripts/mlocate-mnt-efs2.sh?ref_type=heads">mlocate-mnt-efs2.sh</a></li>
+<li><a rel="nofollow" href="https://gitlab.com/aws-lam/no-ssl/-/blob/master/local_scripts/mlocate-mnt-efs3.sh?ref_type=heads">mlocate-mnt-efs3.sh</a></li></ul></li></ul>
+<p>The Create-update-efs-{p,m}locate-db.bash scripts also create a /etc/profile.d/plocate.sh script that is sourced to include the {p,m}locate-db files in the LOCATE_PATH for all users.
+</p><p>A long running instance such as my main aws instance can include the appropriate scripts in a daily-bakup job or in the cron.daily job to have the databases rebuilt daily.
 </p>
 <h2><span id="An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">An EFS by default can be accessed only from the region it is created in</span></h2>
 <p>By default EC2 instances running in multiple Availability Zones within the same AWS Region can access the Elastic File System (EFS) for that region.  An EFS can be created to serve only One Availability Zone but by default a mount target is created for each Availability Zone within the region.
@@ -133,10 +163,10 @@
 <li>Create EFS - aws-efs - use customize option</li>
 <li>Attach EFS security group instead of default on second customize page for the interfaces for each Availability Zone in the region</li></ul>
 <h2><span id="Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</span></h2>
-<pre>alias lld='ls -daRhlF --time-style=long-iso'
-lld /mnt/efs{,/*,/*/*}
-lld /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
-lld /mnt/efs/aws-lam1-ubuntu/ubuntu.t* /mnt/efs/Amazon-Linux-2023/ec2-user.t*
+<pre>alias ll='ls -lF --time-style=long-iso'
+ll -daRh /mnt/efs{,/*,/*/*}
+ll -daRh /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
+ll -daRh /mnt/efs/aws-lam1-ubuntu/ubuntu.t* /mnt/efs/Amazon-Linux-2023/ec2-user.t*
 </pre>
 <pre>sudo chown ubuntu:ubuntu /mnt/efs
 sudo chown ec2-user:ec2-user /mnt/efs
@@ -156,7 +186,7 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <p>For every region other than the us-west-2 Oregon region only the ubuntu.t* and ec2-user.t* archives are installed.  The instance may update the mlocate.db or plocate.db files depending on which version of locate is used by the Operating System of the instance.  This only uses about 100K per region of aws-efs which should incur no monthly charges.
 </p>
 <h2><span id="The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">The original us-west-2 Oregon EFS is backed up to my main server</span></h2>
-<p>As of 2024 I am back up to 1 G of aws efs storage in the us-west-2 Oregon region costing me $0.30 per or $3.60 per year.  I also have a copy of most files in the aws s3://lamurakami bucket also in the us-west-2 Oregon region costing me an additional $0.28 per year.  In March and April of 2024 I had begun eliminating the efs copies but in April of 2024 I paused this when I realized I was using copies on the Bk2 backup of aws efs for initialization of qemu instances on the LAM ALaska LAN.
+<p>As of 2024 I am back up to 1 G of aws efs storage in the us-west-2 Oregon region costing me $0.30 per or $3.60 per year.  I also have a copy of most files in the aws s3://lamurakami bucket also in the us-west-2 Oregon region costing me an additional $0.28 per year.  In March and April of 2024 I had begun eliminating the efs copies but in April of 2024 I paused this when I realized I was using copies on the Bk2 backup of aws efs for initialization of qemu instances on the LAM Alaska LAN.
 </p>
 <ul><li><a rel="nofollow" href="https://ak20.lam1.us/Bk2/aws/efs/">Amazon Web Services (AWS) Elastic File System (EFS)</a> us-west-2 Oregon backup on ak20</li></ul>
 <p>Files in this backup are used by <a rel="nofollow" href="https://ak20.lam1.us/a/QEMU_(Quick_Emulator)_(software)">QEMU (Quick Emulator) (software)|QEMU</a> instances on the LAM Alaska LAN during initialization.
@@ -179,13 +209,13 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <li>My EFS usage in Oregon had grown to over a GB which costs me over $0.30 a month.  Replicating it to all 28 regions would approach $10.00 a month cost.  I tested adding the value to the instance tags so I won't have to make 28 versions of each of the over 15 cloud-init files.  Additional name pair tags could be used to reduce the number of cloud-init files.  I dropped using the EFS tag because it was easy after I had the aws credentials which is one of the secrets I want on the private EFS.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20250207044141
+Cached time: 20250214100539
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
-CPU time usage: 0.008 seconds
-Real time usage: 0.008 seconds
-Preprocessor visited node count: 61/1000000
+CPU time usage: 0.010 seconds
+Real time usage: 0.010 seconds
+Preprocessor visited node count: 77/1000000
 Post‐expand include size: 100/2097152 bytes
 Template argument size: 0/2097152 bytes
 Highest expansion depth: 2/100
@@ -198,13 +228,13 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250207044141 and revision id 8536. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250214100539 and revision id 8575. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8536">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8536</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8575">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8575</a>"</div>
 <ul>
 <li><a href="#Amazon_Storage_Elastic_File_System_(EFS)_pricing">1 Amazon Storage Elastic File System (EFS) pricing</a>
 <ul>
@@ -230,11 +260,22 @@ Transclusion expansion time report (%,ms,calls,template)
 <li><a href="#AWS_LAM_VPC_Elastic_File_Systems">3.1 AWS LAM VPC Elastic File Systems</a></li>
 </ul>
 </li>
-<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">4 An EFS by default can be accessed only from the region it is created in</a></li>
-<li><a href="#Create_an_EFS_in_a_region">5 Create an EFS in a region</a></li>
-<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">6 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
-<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">7 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
-<li><a href="#Log">8 Log</a></li>
+<li><a href="#Create_locate_database_for_nfs_mounted_efs">4 Create locate database for nfs mounted efs</a>
+<ul>
+<li><a href="#The_find_and_locate_commands_are_two_powerful_tools_to_search_for_one_or_more_particular_files">4.1 The find and locate commands are two powerful tools to search for one or more particular files</a></li>
+<li><a href="#A_NFS_mounted_filesystem_is_not_included_in_a_locate_database_by_default.">4.2 A NFS mounted filesystem is not included in a locate database by default.</a></li>
+<li><a href="#Create/Update_locate_database_upon_initialization">4.3 Create/Update locate database upon initialization</a>
+<ul>
+<li><a href="#Support_both_plocate_and_mlocate_utilities">4.3.1 Support both plocate and mlocate utilities</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#An_EFS_by_default_can_be_accessed_only_from_the_region_it_is_created_in">5 An EFS by default can be accessed only from the region it is created in</a></li>
+<li><a href="#Create_an_EFS_in_a_region">6 Create an EFS in a region</a></li>
+<li><a href="#Populate_EFS_with_the_ubuntu.tgz_and_ec2-user.tgz_user_resource_files">7 Populate EFS with the ubuntu.tgz and ec2-user.tgz user resource files</a></li>
+<li><a href="#The_original_us-west-2_Oregon_EFS_is_backed_up_to_my_main_server">8 The original us-west-2 Oregon EFS is backed up to my main server</a></li>
+<li><a href="#Log">9 Log</a></li>
 </ul>
 </div>
 </body></html>
