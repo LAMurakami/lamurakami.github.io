@@ -44,7 +44,6 @@
 
 </h1>
 <br class="clearit">
-
 <!-- start content -->
 <div id="mw-content-text"><div lang="en" dir="ltr">
 
@@ -70,10 +69,10 @@
 <h3><span id="One_Zone_and_Lifecycle_Managed_EFS_storage_classes">One Zone and Lifecycle Managed EFS storage classes</span></h3>
 <p>Since I first started using EFS AWS has added One Zone and EFS storage classes.  There are also Performance and Throughput mode options that may not have been available in 2017 when I created my first EFS.
 </p><p>After investigation into the new EFS options I decided that the Zz backup if moved to EFS from EBS would cost me less.  I did testing and forced almost all to go to the Infrequent Access Storage Class and tested that the daily backup does not bring unchanged target files back online and that access from the web interface is still an acceptable latency.  I was surprised at the cost of Elastic Throughput reads and writes to the One Zone Lifecycle Managed EFS which is significant and could really cost me if access isn't really infrequent.
-</p><p>Although storeage prices can be reduced by One Zone and Lifecycle Managed EFS storage classes the charges for throughput and data access could easily exceed any saving if access is to frequent.
+</p><p>Although storage prices can be reduced by One Zone and Lifecycle Managed EFS storage classes the charges for throughput and data access could easily exceed any saving if access is to frequent.
 </p>
 <h3><span id="Regional_EFS_with_Elastic_Throughput_and_Lifecycle_Management">Regional EFS with Elastic Throughput and Lifecycle Management</span></h3>
-<p>Standard storage is the same as in an EFS without Lifecycle Management but the Infrequent Access storage class can save nearly 95% and Archive storage class even more but Reads and Tiering costs could eat up the savings along with the minimum billable file size and minimum storage duration.
+<p>Standard storage cost is the same as in an EFS without Lifecycle Management but the Infrequent Access storage class can save nearly 95% and Archive storage class even more but Reads and Tiering costs could eat up the savings along with the minimum billable file size and minimum storage duration.
 </p>
 <h4><span id="Storage">Storage</span></h4>
 <ul><li>$0.016 - Infrequent Access (GB-Month) - For inactive data accessed only a few times each quarter - $192 / TB-Year</li>
@@ -109,7 +108,7 @@
 <ul><li>Performance mode: General Purpose - Throughput mode: Elastic - Lifecycle management: 30 day Transition into Infrequent Access (IA), 90 day Transition into Archive, Transition back into Standard On first access</li></ul></li>
 <li>aws-efs3 A One Zone Lifecycle Managed EFS for each Availability Zone (where supported)
 <ul><li>Performance mode: General Purpose - Throughput mode: Elastic - Lifecycle management: 30 day Transition into Infrequent Access (IA), No Transition into Archive, Transition back into Standard On first access</li></ul></li></ul>
-<p>All 32 REGIONs enabled for my AWS account, as of January 2025, support Standard and Lifecycle Management EFS but a number of Availability Zones including all for 10 REGIONs do not yet support One Zone Lifecycle Managed EFS.  I have detailed those with <b> No One Zone EFS</b> support in the <a rel="nofollow" href="https://lamurakami.github.io/blog/2025/02/07/I_created_63_One_Zone_Lifecycle_Managed_AWS_EFS.html">AWS Availability Zone subnet id</a> page I created while testing One Zone EFS for every Availability Zone that supports it.
+<p>All 32 REGIONs enabled for my AWS account, as of January 2025, support Standard and Lifecycle Management EFS but a number of Availability Zones including all for 11 REGIONs do not yet support One Zone Lifecycle Managed EFS.  I have detailed those with <b> No One Zone EFS</b> support in the <a rel="nofollow" href="https://lamurakami.github.io/blog/2025/02/07/I_created_63_One_Zone_Lifecycle_Managed_AWS_EFS.html">AWS Availability Zone subnet id</a> page I created while testing One Zone EFS for every Availability Zone that supports it.
 </p><p>In 2017 when I created the EFS in the us-west-2 Oregon region it's usage in my LAM Alaska Clone project was based on the $0.30 / GB Month pricing which was the most expensive storage available but was extremely convenient.  EFS is mounted on Linux systems as a Network File System (NFS) with the ability to be accessed by thousands of instances and I don't have to manage the server.  It is persistent storage that doesn't require a running instance and although expensive I only pay for storage used form the very large capacity available.
 </p><p>The systems using Lifecycle Management allow simple policies that can move data between standard storage and the new Infrequent Access (IA) and Archive storage classes that are less expensive than Standard storage.  The One Zone EFS is also cheaper than standard storage and is available to instances in a single Availability Zone instead of all in the region and includes the IA storage class for the cheapest still.
 </p><p>I use "cloud-init query" to retrieve the REGION and Availability_Zone and then the <a rel="nofollow" href="https://gitlab.com/aws-lam/aws/-/blob/master/aws-efs-mount.bash?ref_type=heads">aws-efs-mount.bash script</a> to mount the filesystem.
@@ -209,7 +208,7 @@ sudo chown lam:staff /mnt/efs{,/aws-lam1-ubuntu{,/*},/Amazon-Linux-2023{,/*}}
 <li>My EFS usage in Oregon had grown to over a GB which costs me over $0.30 a month.  Replicating it to all 28 regions would approach $10.00 a month cost.  I tested adding the value to the instance tags so I won't have to make 28 versions of each of the over 15 cloud-init files.  Additional name pair tags could be used to reduce the number of cloud-init files.  I dropped using the EFS tag because it was easy after I had the aws credentials which is one of the secrets I want on the private EFS.</li></ul></li></ul>
 <!-- 
 NewPP limit report
-Cached time: 20250214100539
+Cached time: 20250216042909
 Cache expiry: 86400
 Reduced expiry: false
 Complications: [show‐toc]
@@ -228,13 +227,13 @@ Transclusion expansion time report (%,ms,calls,template)
 100.00%    0.000      1 -total
 -->
 
-<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250214100539 and revision id 8575. Rendering was triggered because: edit-page
+<!-- Saved in parser cache with key wikidb:pcache:idhash:485-0!canonical and timestamp 20250216042909 and revision id 8591. Rendering was triggered because: edit-page
  -->
 </div>
 </div>
 <!-- end content -->
 <div id="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" style="display:none" /><div lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><label for="toctogglecheckbox"></label></div>
-<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8575">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8575</a>"</div>
+<div data-nosnippet="">Retrieved from "<a dir="ltr" href="https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8591">https://ak20.lam1.us/A/index.php?title=(AWS)_Elastic_File_System_(EFS)&amp;oldid=8591</a>"</div>
 <ul>
 <li><a href="#Amazon_Storage_Elastic_File_System_(EFS)_pricing">1 Amazon Storage Elastic File System (EFS) pricing</a>
 <ul>
